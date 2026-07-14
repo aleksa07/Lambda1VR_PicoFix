@@ -28,15 +28,28 @@ jobs:
       - name: Install NDK ${{ vars.NDK_VERSION || '25.1.8937393' }}
         run: sdkmanager "ndk;${{ vars.NDK_VERSION || '25.1.8937393' }}"
 
+      - name: Install build-tools and platform
+        run: sdkmanager "build-tools;33.0.2" "platforms;android-33"
+
       - name: Make gradlew executable
         run: chmod +x Projects/Android/gradlew
 
       - name: Build release APK
+        id: build
         working-directory: Projects/Android
-        run: ./gradlew assembleRelease
+        run: ./gradlew assembleRelease --info 2>&1 | tee build_log.txt
+        continue-on-error: true
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: Projects/Android/build_log.txt
+          if-no-files-found: ignore
 
       - name: Upload APK artifact (experimental)
-        if: github.ref == 'refs/heads/experimental'
+        if: github.ref == 'refs/heads/experimental' && success()
         uses: actions/upload-artifact@v4
         with:
           name: lambda1vr-picofix-experimental
@@ -44,7 +57,7 @@ jobs:
           if-no-files-found: error
 
       - name: Create GitHub Release (main)
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && success()
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.run_number }}
@@ -57,3 +70,7 @@ jobs:
           prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fail if build failed
+        if: steps.build.outcome == 'failure'
+        run: exit 1
