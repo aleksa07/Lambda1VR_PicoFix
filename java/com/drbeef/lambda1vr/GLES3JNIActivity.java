@@ -49,13 +49,17 @@ import static android.system.Os.setenv;
 			manufacturer = "meta";
 		}
 
+		// Always set the HMD environment variable so native code knows what device we're on
+		setenv("OPENXR_HMD", manufacturer, true);
+
 		try
 		{
 			//Load manufacturer specific loader
 			System.loadLibrary("openxr_loader_" + manufacturer);
-			setenv("OPENXR_HMD", manufacturer, true);
 		} catch (Exception e)
-		{}
+		{
+			Log.e("Lambda1VR", "Failed to load openxr_loader_" + manufacturer, e);
+		}
 
 		System.loadLibrary( "xash" );
 	}

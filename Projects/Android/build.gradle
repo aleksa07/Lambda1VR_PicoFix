@@ -33,13 +33,13 @@ android {
             }
             ndkBuild {
                 def numProcs = Runtime.runtime.availableProcessors()
-                arguments "V=0", "-j$numProcs", "-C$project.buildDir.parent", "APP_PLATFORM=android-32", "NDK_TOOLCHAIN_VERSION=clang", "APP_STL=c++_static"
+                arguments "V=0", "-j$numProcs", "-C$project.buildDir.parent", "APP_PLATFORM=android-24", "NDK_TOOLCHAIN_VERSION=clang", "APP_STL=c++_static"
                 abiFilters 'arm64-v8a'
             }
         }
 
-        minSdkVersion 32
-        targetSdkVersion 32
+        minSdkVersion 24
+        targetSdkVersion 29
     }
 
     externalNativeBuild {
@@ -127,8 +127,8 @@ android {
         sourceCompatibility = '1.8'
         targetCompatibility = '1.8'
     }
-    compileSdkVersion = 32
-    buildToolsVersion = '29.0.3'
+    compileSdkVersion = 33
+    buildToolsVersion = '33.0.2'
 
     ndkVersion '25.1.8937393'
 }

@@ -1,0 +1,59 @@
+name: Build Lambda1VR PicoFix
+
+on:
+  push:
+    branches: [ experimental, main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK and NDK
+        uses: android-actions/setup-android@v3
+        with:
+          accept-android-sdk-licenses: true
+
+      - name: Install NDK ${{ vars.NDK_VERSION || '25.1.8937393' }}
+        run: sdkmanager "ndk;${{ vars.NDK_VERSION || '25.1.8937393' }}"
+
+      - name: Make gradlew executable
+        run: chmod +x Projects/Android/gradlew
+
+      - name: Build release APK
+        working-directory: Projects/Android
+        run: ./gradlew assembleRelease
+
+      - name: Upload APK artifact (experimental)
+        if: github.ref == 'refs/heads/experimental'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lambda1vr-picofix-experimental
+          path: Projects/Android/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+
+      - name: Create GitHub Release (main)
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: "Lambda1VR PicoFix Build ${{ github.run_number }}"
+          body: |
+            Automated build from main branch.
+            Commit: ${{ github.sha }}
+          files: Projects/Android/build/outputs/apk/release/*.apk
+          draft: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
