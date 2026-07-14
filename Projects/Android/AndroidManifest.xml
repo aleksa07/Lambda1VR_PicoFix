@@ -27,7 +27,8 @@
 	<application android:allowBackup="false"
 		android:icon="@drawable/ic_lambda1vr"
 		android:label="@string/lambda1vr"
-		android:extractNativeLibs="true"	>
+		android:extractNativeLibs="true"
+		android:requestLegacyExternalStorage="true"	>
 
 		<meta-data android:name="com.samsung.android.vr.application.mode" android:value="vr_only"/>
 
