@@ -67,6 +67,7 @@ import static android.system.Os.setenv;
 	private static final String TAG = "Lambda1VR";
 
 	private static final int REQUEST_MANAGE_ALL_FILES = 2296;
+	private static final int REQUEST_WRITE_STORAGE = 2297;
 
 
 	String commandLineParams;
@@ -95,18 +96,21 @@ import static android.system.Os.setenv;
 	/** Initializes the Activity only if the permission has been granted. */
 	private void checkPermissionsAndInitialize() {
 		if (android.os.Build.VERSION.SDK_INT >= 30 && !Environment.isExternalStorageManager()) {
-			//request for the permission
 			Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
 			Uri uri = Uri.fromParts("package", getPackageName(), null);
 			intent.setData(uri);
 			startActivityForResult(intent, REQUEST_MANAGE_ALL_FILES);
-
-			finishAffinity(); // Cleanly exit
-
+			finishAffinity();
+		}
+		else if (android.os.Build.VERSION.SDK_INT < 30 &&
+				ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+				!= PackageManager.PERMISSION_GRANTED) {
+			ActivityCompat.requestPermissions(this,
+					new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE },
+					REQUEST_WRITE_STORAGE);
 		}
 		else
 		{
-			// Permissions have already been granted.
 			create();
 		}
 	}
@@ -114,8 +118,20 @@ import static android.system.Os.setenv;
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		finishAffinity(); // Cleanly exit
+		finishAffinity();
 		System.exit(0);
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		if (requestCode == REQUEST_WRITE_STORAGE) {
+			if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+				create();
+			} else {
+				finishAffinity();
+				System.exit(0);
+			}
+		}
 	}
 
 	public void create()
