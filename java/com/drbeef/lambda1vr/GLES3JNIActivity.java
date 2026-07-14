@@ -50,7 +50,7 @@ import static android.system.Os.setenv;
 		}
 
 		// Always set the HMD environment variable so native code knows what device we're on
-		setenv("OPENXR_HMD", manufacturer, true);
+		try { setenv("OPENXR_HMD", manufacturer, true); } catch (Exception e) { Log.w("Lambda1VR", "setenv failed", e); }
 
 		try
 		{
