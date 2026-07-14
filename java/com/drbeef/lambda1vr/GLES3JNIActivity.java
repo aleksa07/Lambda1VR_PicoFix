@@ -94,7 +94,7 @@ import static android.system.Os.setenv;
 
 	/** Initializes the Activity only if the permission has been granted. */
 	private void checkPermissionsAndInitialize() {
-		if (!Environment.isExternalStorageManager()) {
+		if (android.os.Build.VERSION.SDK_INT >= 30 && !Environment.isExternalStorageManager()) {
 			//request for the permission
 			Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
 			Uri uri = Uri.fromParts("package", getPackageName(), null);
